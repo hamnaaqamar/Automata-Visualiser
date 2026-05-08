@@ -1,0 +1,26 @@
+{
+  "name": "automata-visualizer",
+  "version": "1.0.0",
+  "description": "Interactive Angular and Node.js regular-expression to finite-automata visualizer.",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "start:backend": "npm --workspace backend run dev",
+    "start:frontend": "npm --workspace frontend start",
+    "build": "npm --workspace backend run build && npm --workspace frontend run build",
+    "test": "npm --workspace backend test"
+  },
+  "keywords": [
+    "automata",
+    "regular-expression",
+    "nfa",
+    "dfa",
+    "visualizer"
+  ],
+  "author": "",
+  "license": "MIT"
+}

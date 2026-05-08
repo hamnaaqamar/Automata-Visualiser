@@ -1,0 +1,27 @@
+{
+  "name": "automata-visualizer-frontend",
+  "version": "1.0.0",
+  "description": "Angular frontend for the Automata Visualizer.",
+  "scripts": {
+    "start": "ng serve --host 0.0.0.0",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development"
+  },
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "@angular/common": "^21.2.12",
+    "@angular/compiler": "^21.2.12",
+    "@angular/core": "^21.2.12",
+    "@angular/forms": "^21.2.12",
+    "@angular/platform-browser": "^21.2.12",
+    "rxjs": "^7.8.2",
+    "zone.js": "^0.16.2"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.2.10",
+    "@angular/cli": "^21.2.10",
+    "@angular/compiler-cli": "^21.2.12",
+    "typescript": "^5.9.3"
+  }
+}
