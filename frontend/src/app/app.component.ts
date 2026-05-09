@@ -30,23 +30,23 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
       </nav>
       <section class="hero-grid">
         <div>
-          <p class="eyebrow">Interactive Automata Theory</p>
-          <h1>Understand regular expressions by watching automata emerge.</h1>
+          <p class="eyebrow">Finite automata workbench</p>
+          <h1>Build the automaton for a regular expression.</h1>
           <p class="hero-copy">
-            Enter a regular expression, inspect Thompson's NFA, convert it with subset construction,
-            minimize the DFA, and test strings against the final machine.
+            Convert a regex, inspect each construction stage, and test strings against the same
+            expression without losing track of what is currently being checked.
           </p>
         </div>
 
         <form class="panel input-panel" (ngSubmit)="convert()">
           <label for="regex">Regular expression</label>
           <div class="input-row">
-            <input id="regex" name="regex" [(ngModel)]="regex" autocomplete="off" />
+            <input id="regex" name="regex" [ngModel]="regex" (ngModelChange)="onRegexInput($event)" autocomplete="off" />
             <button type="submit" [disabled]="loading">{{ loading ? "Building..." : "Visualize" }}</button>
           </div>
           <p class="hint">
-            Supported operators: union <code>|</code>, Kleene star <code>*</code>, plus
-            <code>+</code>, optional <code>?</code>, grouping <code>()</code>, and epsilon
+            Supported operators: union <code>+</code> or <code>|</code>, Kleene star
+            <code>*</code>, optional <code>?</code>, grouping <code>()</code>, and epsilon
             <code>ε</code>. Concatenation is implicit.
           </p>
           <div class="examples" aria-label="Example regular expressions">
@@ -61,6 +61,9 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
     <main>
       <section class="status visible" [class.error]="error" role="status" *ngIf="statusMessage">
         {{ statusMessage }}
+      </section>
+      <section class="status stale" role="status" *ngIf="isDirty && conversion && !error">
+        The diagrams below still show <code>{{ conversion.regex }}</code>. Press Visualize to refresh them.
       </section>
 
       <section class="stage-summary" aria-label="Transformation summary">
@@ -84,20 +87,20 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
         ></app-stats-card>
         <app-stats-card
           step="4"
-          title="Minimize"
-          description="Merge equivalent DFA states into an optimized automaton."
+          title="Final FA"
+          description="Merge equivalent DFA states into the compact automaton."
           [value]="countSummary(conversion?.minimizedDfa)"
         ></app-stats-card>
       </section>
 
-      <app-string-tester [regex]="conversion?.regex || regex"></app-string-tester>
+      <app-string-tester [regex]="regex" (testStarted)="showFinalAutomaton($event)"></app-string-tester>
 
       <section class="tabs" aria-label="Automata diagrams">
+        <button class="tab" [class.active]="activeTab === 'minimized'" (click)="activeTab = 'minimized'">
+          Final FA
+        </button>
         <button class="tab" [class.active]="activeTab === 'nfa'" (click)="activeTab = 'nfa'">NFA</button>
         <button class="tab" [class.active]="activeTab === 'dfa'" (click)="activeTab = 'dfa'">DFA</button>
-        <button class="tab" [class.active]="activeTab === 'minimized'" (click)="activeTab = 'minimized'">
-          Minimized DFA
-        </button>
         <button class="tab" [class.active]="activeTab === 'steps'" (click)="activeTab = 'steps'">
           Construction Steps
         </button>
@@ -130,10 +133,10 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
       <section class="panel diagram-section active" *ngIf="activeTab === 'minimized'">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Stage 3</p>
-            <h2>Minimized DFA</h2>
+            <p class="eyebrow">Final automaton</p>
+            <h2>Minimized FA</h2>
           </div>
-          <p>Equivalent DFA states are grouped into the same minimized state.</p>
+          <p>This is the compact automaton used for string testing. NFA and DFA tabs show the construction stages.</p>
         </div>
         <app-transition-table [automaton]="conversion?.minimizedDfa || null" mappingLabel="DFA group"></app-transition-table>
         <app-automaton-canvas [automaton]="conversion?.minimizedDfa || null"></app-automaton-canvas>
@@ -161,9 +164,10 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
 })
 export class AppComponent {
   regex = "(a|b)*ab";
-  examples = ["(a|b)*ab", "a(b|c)*", "(ab|ba)+", "a?b*"];
+  examples = ["(a+b)*aa(a+b)*", "(a+b)*ab", "a(b+c)*", "a?b*"];
   conversion: ConversionResult | null = null;
-  activeTab: ActiveTab = "nfa";
+  isDirty = false;
+  activeTab: ActiveTab = "minimized";
   loading = false;
   error = false;
   statusMessage = "";
@@ -180,6 +184,9 @@ export class AppComponent {
     this.automataApi.convert(this.regex).subscribe({
       next: (conversion) => {
         this.conversion = conversion;
+        this.regex = conversion.regex;
+        this.isDirty = false;
+        this.activeTab = "minimized";
         this.loading = false;
         this.statusMessage = "Conversion complete. Inspect each stage or test a string.";
       },
@@ -194,6 +201,18 @@ export class AppComponent {
   useExample(example: string): void {
     this.regex = example;
     this.convert();
+  }
+
+  onRegexInput(value: string): void {
+    this.regex = value;
+    this.isDirty = this.conversion?.regex !== this.regex;
+  }
+
+  showFinalAutomaton(testedRegex: string): void {
+    this.activeTab = "minimized";
+    if (this.conversion?.regex !== testedRegex && !this.loading) {
+      this.convert();
+    }
   }
 
   countSummary(automaton: { states: string[]; transitions: unknown[] } | null | undefined): string {

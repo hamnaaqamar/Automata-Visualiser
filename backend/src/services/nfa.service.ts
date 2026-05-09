@@ -56,7 +56,7 @@ export class NfaService {
         return;
       }
 
-      if (token.value === "|") {
+      if (token.value === "|" || token.value === "+") {
         const right = this.popFragment(stack);
         const left = this.popFragment(stack);
         const start = createState();
@@ -85,21 +85,6 @@ export class NfaService {
         steps.push({
           title: "Apply Kleene star",
           description: `Allow zero or more repetitions of ${fragment.expression}.`,
-        });
-        return;
-      }
-
-      if (token.value === "+") {
-        const fragment = this.popFragment(stack);
-        const start = createState();
-        const accept = createState();
-        addTransition(start, fragment.start, EPSILON);
-        addTransition(fragment.accept, fragment.start, EPSILON);
-        addTransition(fragment.accept, accept, EPSILON);
-        stack.push(createFragment(start, accept, `(${fragment.expression})+`));
-        steps.push({
-          title: "Apply one-or-more",
-          description: `Require ${fragment.expression} once, then optionally repeat it.`,
         });
         return;
       }

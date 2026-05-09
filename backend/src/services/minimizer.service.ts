@@ -76,11 +76,26 @@ export class MinimizerService {
       });
     });
 
+    const minimizedStates = partitions.map((_, index) => `M${index}`);
+    const trapStates = this.findRemovableTrapStates(
+      minimizedStates,
+      complete.alphabet,
+      transitions,
+      complete.start,
+      stateMap,
+      partitions,
+      accepting,
+    );
+
+    trapStates.forEach((state) => {
+      delete groupedStates[state];
+    });
+
     return this.nfaService.normalize({
       type: "Minimized DFA",
-      states: partitions.map((_, index) => `M${index}`),
+      states: minimizedStates.filter((state) => !trapStates.has(state)),
       alphabet: complete.alphabet,
-      transitions,
+      transitions: transitions.filter((transition) => !trapStates.has(transition.from) && !trapStates.has(transition.to)),
       start: stateMap.get(complete.start) || "M0",
       accepts: partitions
         .map((group, index) => (group.some((state) => accepting.has(state)) ? `M${index}` : null))
@@ -101,5 +116,31 @@ export class MinimizerService {
       ordered.unshift(startGroup);
     }
     return ordered;
+  }
+
+  private findRemovableTrapStates(
+    states: string[],
+    alphabet: string[],
+    transitions: Transition[],
+    originalStart: string,
+    stateMap: Map<string, string>,
+    partitions: string[][],
+    accepting: Set<string>,
+  ): Set<string> {
+    const minimizedStart = stateMap.get(originalStart);
+
+    return new Set(
+      states.filter((state, index) => {
+        if (state === minimizedStart || partitions[index].some((originalState) => accepting.has(originalState))) {
+          return false;
+        }
+
+        return alphabet.every((symbol) =>
+          transitions.some(
+            (transition) => transition.from === state && transition.symbol === symbol && transition.to === state,
+          ),
+        );
+      }),
+    );
   }
 }

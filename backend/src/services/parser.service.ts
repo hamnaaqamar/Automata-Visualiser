@@ -74,6 +74,7 @@ export class ParserService {
     const stack: Token[] = [];
     const precedence: Record<string, number> = {
       "|": 1,
+      "+": 1,
       [CONCAT]: 2,
     };
 
@@ -107,12 +108,12 @@ export class ParserService {
         return;
       }
 
-      if (token.value === "*" || token.value === "+" || token.value === "?") {
+      if (token.value === "*" || token.value === "?") {
         output.push(token);
         return;
       }
 
-      if (token.value === "|" || token.value === CONCAT) {
+      if (token.value === "|" || token.value === "+" || token.value === CONCAT) {
         while (
           stack.length > 0 &&
           stack[stack.length - 1].value !== "(" &&
@@ -154,14 +155,14 @@ export class ParserService {
         return;
       }
 
-      if (token.value === "*" || token.value === "+" || token.value === "?") {
+      if (token.value === "*" || token.value === "?") {
         if (depth < 1) {
           throw new RegexSyntaxError(`Operator "${token.value}" has no expression to repeat.`);
         }
         return;
       }
 
-      if (token.value === "|" || token.value === CONCAT) {
+      if (token.value === "|" || token.value === "+" || token.value === CONCAT) {
         if (depth < 2) {
           throw new RegexSyntaxError(`Operator "${token.value}" is missing an operand.`);
         }
@@ -180,7 +181,6 @@ export class ParserService {
       token.type === "epsilon" ||
       token.value === ")" ||
       token.value === "*" ||
-      token.value === "+" ||
       token.value === "?"
     );
   }
