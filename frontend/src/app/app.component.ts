@@ -46,8 +46,8 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
           </div>
           <p class="hint">
             Supported operators: union <code>+</code> or <code>|</code>, Kleene star
-            <code>*</code>, optional <code>?</code>, grouping <code>()</code>, and epsilon
-            <code>ε</code>. Concatenation is implicit.
+            <code>*</code>, positive closure <code>^+</code>, optional <code>?</code>,
+            grouping <code>()</code>, and epsilon <code>ε</code>. Concatenation is implicit.
           </p>
           <div class="examples" aria-label="Example regular expressions">
             <button type="button" *ngFor="let example of examples" (click)="useExample(example)">
@@ -164,7 +164,7 @@ type ActiveTab = "nfa" | "dfa" | "minimized" | "steps";
 })
 export class AppComponent {
   regex = "(a|b)*ab";
-  examples = ["(a+b)*aa(a+b)*", "(a+b)*ab", "a(b+c)*", "a?b*"];
+  examples = ["(a+b)^+", "(a+b)*aa(a+b)*", "(a+b)*ab", "a(b+c)*"];
   conversion: ConversionResult | null = null;
   isDirty = false;
   activeTab: ActiveTab = "minimized";

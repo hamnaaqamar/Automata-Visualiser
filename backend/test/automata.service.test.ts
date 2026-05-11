@@ -41,6 +41,20 @@ test("accepts classroom plus-union notation", () => {
   assert.equal(service.test(regex, "abab").accepted, false);
 });
 
+test("supports positive closure with ^+", () => {
+  const regex = "(a+b)^+";
+
+  assert.equal(service.test(regex, "").accepted, false);
+  assert.equal(service.test(regex, "a").accepted, true);
+  assert.equal(service.test(regex, "b").accepted, true);
+  assert.equal(service.test(regex, "ab").accepted, true);
+  assert.equal(service.test(regex, "baab").accepted, true);
+  assert.equal(service.test("a^+", "").accepted, false);
+  assert.equal(service.test("a^+", "a").accepted, true);
+  assert.equal(service.test("a^+", "aaa").accepted, true);
+  assert.equal(service.test("a^+", "b").accepted, false);
+});
+
 test("minimization preserves deterministic transitions without display-only trap states", () => {
   const conversion = service.convert("(a|b)*ab");
   const minimized = conversion.minimizedDfa;
@@ -70,4 +84,5 @@ test("reports invalid expressions", () => {
   assert.throws(() => service.convert("a|"), /missing an operand/);
   assert.throws(() => service.convert("(ab"), /Mismatched opening parenthesis/);
   assert.throws(() => service.convert("*a"), /no expression to repeat/);
+  assert.throws(() => service.convert("(a+b)^"), /positive closure/);
 });

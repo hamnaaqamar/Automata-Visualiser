@@ -89,6 +89,21 @@ export class NfaService {
         return;
       }
 
+      if (token.value === "^+") {
+        const fragment = this.popFragment(stack);
+        const start = createState();
+        const accept = createState();
+        addTransition(start, fragment.start, EPSILON);
+        addTransition(fragment.accept, fragment.start, EPSILON);
+        addTransition(fragment.accept, accept, EPSILON);
+        stack.push(createFragment(start, accept, `(${fragment.expression})^+`));
+        steps.push({
+          title: "Apply positive closure",
+          description: `Require ${fragment.expression} once, then allow more repetitions.`,
+        });
+        return;
+      }
+
       if (token.value === "?") {
         const fragment = this.popFragment(stack);
         const start = createState();

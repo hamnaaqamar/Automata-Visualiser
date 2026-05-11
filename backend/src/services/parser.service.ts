@@ -41,6 +41,15 @@ export class ParserService {
         continue;
       }
 
+      if (char === "^") {
+        if (regex[index + 1] !== "+") {
+          throw new RegexSyntaxError('Use "^+" for positive closure.');
+        }
+        tokens.push({ type: "operator", value: "^+", label: "^+" });
+        index += 1;
+        continue;
+      }
+
       if ("|()*+?".includes(char)) {
         tokens.push({ type: "operator", value: char, label: char });
         continue;
@@ -108,7 +117,7 @@ export class ParserService {
         return;
       }
 
-      if (token.value === "*" || token.value === "?") {
+      if (token.value === "*" || token.value === "^+" || token.value === "?") {
         output.push(token);
         return;
       }
@@ -155,7 +164,7 @@ export class ParserService {
         return;
       }
 
-      if (token.value === "*" || token.value === "?") {
+      if (token.value === "*" || token.value === "^+" || token.value === "?") {
         if (depth < 1) {
           throw new RegexSyntaxError(`Operator "${token.value}" has no expression to repeat.`);
         }
@@ -181,6 +190,7 @@ export class ParserService {
       token.type === "epsilon" ||
       token.value === ")" ||
       token.value === "*" ||
+      token.value === "^+" ||
       token.value === "?"
     );
   }
